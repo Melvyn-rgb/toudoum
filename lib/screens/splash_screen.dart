@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'main_page.dart';
+import '../utils/localization.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Localization localization;
+
+  const SplashScreen({Key? key, required this.localization}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -15,7 +18,9 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainPage()),
+        MaterialPageRoute(
+          builder: (context) => MainPage(localization: widget.localization),
+        ),
       );
     });
   }

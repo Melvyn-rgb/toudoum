@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import '../components/custom_button.dart';
 import '../utils/colors.dart'; // Import resource colors
+import '../utils/localization.dart';
 
 class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+  final Localization localization;
+
+  const MainPage({Key? key, required this.localization}) : super(key: key);
+
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +19,7 @@ class MainPage extends StatelessWidget {
             Image.asset('assets/logo.png', width: 200, height: 150),
             const SizedBox(height: 50),
             CustomButton(
-              text: 'Login',
+              text: localization.get('login'),
               backgroundColor: mainColor, // Use resource color
               textColor: buttonTextColor, // Use white text
               onPressed: () {
@@ -24,7 +28,7 @@ class MainPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             CustomButton(
-              text: 'Register',
+              text: localization.get('register'),
               backgroundColor: Colors.transparent, // Transparent background
               textColor: buttonTextColor, // White text
               onPressed: () {
@@ -51,7 +55,7 @@ class MainPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
-                      'or try',
+                      localization.get('or_try'),
                       style: TextStyle(
                         color: Colors.grey, // Text color
                         fontSize: 14, // Adjust font size to be smaller
@@ -76,7 +80,7 @@ class MainPage extends StatelessWidget {
                 print('Continue as a guest tapped');
               },
               child: Text(
-                'Continue as a guest',
+                localization.get('continue_guest'),
                 style: TextStyle(
                   color: Colors.grey, // Set text color to white
                   fontSize: 14, // Adjust the font size to be smaller

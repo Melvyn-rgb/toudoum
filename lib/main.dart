@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
 import 'utils/theme.dart';
 import 'screens/splash_screen.dart';
+import 'utils/localization.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Detect system locale
+  final String systemLocale = WidgetsBinding.instance.window.locale.languageCode;
+
+  // Load localization strings
+  final Localization localization = Localization(systemLocale);
+  await localization.load();
+
+  runApp(MyApp(localization: localization));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Localization localization;
+
+  const MyApp({super.key, required this.localization});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Netflix Theme',
-      theme: appTheme, // Use the imported theme
-      home: const SplashScreen(),
+      title: localization.get('app_title'),
+      theme: appTheme,
+      home: SplashScreen(localization: localization),
     );
   }
 }
