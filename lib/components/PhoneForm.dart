@@ -2,25 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import '../utils/colors.dart';
 import '../utils/localization.dart';
+import '../screens/home.dart';
 
-// Phone Number Form Widget
-class PhoneNumberForm extends StatelessWidget {
+class PhoneNumberForm extends StatefulWidget {
   final String action;
   final Localization localization;
 
   const PhoneNumberForm({Key? key, required this.action, required this.localization}) : super(key: key);
 
   @override
+  _PhoneNumberFormState createState() => _PhoneNumberFormState();
+}
+
+class _PhoneNumberFormState extends State<PhoneNumberForm> {
+  late PhoneController _phoneController;
+  final String testPhoneNumber = '+33777777777'; // Hardcoded test phone number
+  bool _isLoading = false; // State variable to toggle views
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController = PhoneController(initialValue: PhoneNumber.parse('+33')); // Initialize with default value
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose(); // Dispose the controller to free resources
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black, // Netflix dark background
       padding: const EdgeInsets.all(20),
-      child: Column(
+      child: _isLoading
+          ? const Center(
+        child: CircularProgressIndicator(color: Colors.red), // Show loading indicator
+      )
+          : Column(
         mainAxisSize: MainAxisSize.min, // Adjust height to content
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            action == 'login' ? localization.get('login') : localization.get('register'),
+            widget.action == 'login'
+                ? widget.localization.get('login')
+                : widget.localization.get('register'),
             style: const TextStyle(
               color: Colors.white, // White text color
               fontSize: 24,
@@ -29,11 +56,10 @@ class PhoneNumberForm extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           PhoneFormField(
-            initialValue: PhoneNumber.parse('+33'),
+            controller: _phoneController,
             validator: PhoneValidator.compose(
-                [PhoneValidator.required(context), PhoneValidator.validMobile(context)]
+              [PhoneValidator.required(context), PhoneValidator.validMobile(context)],
             ),
-            onChanged: (phoneNumber) => print('changed into $phoneNumber'),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.black, // Black background
@@ -78,11 +104,34 @@ class PhoneNumberForm extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              // Handle phone number submission logic
-              print('Phone number submitted for $action');
+              setState(() {
+                _isLoading = true; // Show loading indicator
+              });
+              Future.delayed(const Duration(seconds: 2), () {
+                if (_phoneController.value?.international == testPhoneNumber) {
+                  Navigator.pop(context); // Close bottom sheet
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(), // Navigate to HomePage
+                    ),
+                  );
+                } else {
+                  setState(() {
+                    _isLoading = false; // Revert back to form view
+                  });
+                  // Show an error message if phone number doesn't match
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(widget.localization.get('invalid_phone_number')),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              });
             },
             child: Text(
-              localization.get('submit'),
+              widget.localization.get('submit'),
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
           ),
