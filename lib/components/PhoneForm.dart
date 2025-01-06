@@ -18,15 +18,25 @@ class _PhoneNumberFormState extends State<PhoneNumberForm> {
   late PhoneController _phoneController;
   final String testPhoneNumber = '+33777777777'; // Hardcoded test phone number
   bool _isLoading = false; // State variable to toggle views
+  bool _isValidPhone = false; // Track phone validation
 
   @override
   void initState() {
     super.initState();
-    _phoneController = PhoneController(initialValue: PhoneNumber.parse('+33')); // Initialize with default value
+    _phoneController = PhoneController(initialValue: PhoneNumber.parse('+33'));
+    _phoneController.addListener(_validatePhoneNumber);
+  }
+
+  void _validatePhoneNumber() {
+    final phone = _phoneController.value;
+    setState(() {
+      _isValidPhone = phone != null && phone.isValid();
+    });
   }
 
   @override
   void dispose() {
+    _phoneController.removeListener(_validatePhoneNumber);
     _phoneController.dispose(); // Dispose the controller to free resources
     super.dispose();
   }
@@ -66,15 +76,15 @@ class _PhoneNumberFormState extends State<PhoneNumberForm> {
               hintText: 'Enter your phone number',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide(color: Colors.white), // Border color
+                borderSide: const BorderSide(color: Colors.white), // Border color
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide(color: Colors.white), // Focused border color
+                borderSide: const BorderSide(color: Colors.white), // Focused border color
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide(color: Colors.white), // Default border color
+                borderSide: const BorderSide(color: Colors.white), // Default border color
               ),
             ),
             style: const TextStyle(
@@ -97,13 +107,14 @@ class _PhoneNumberFormState extends State<PhoneNumberForm> {
           const SizedBox(height: 20),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: mainColor, // Netflix red button
+              backgroundColor: _isValidPhone ? mainColor : Colors.grey, // Red when enabled, grey when disabled
               minimumSize: const Size(double.infinity, 50), // Full-width button
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {
+            onPressed: _isValidPhone
+                ? () {
               setState(() {
                 _isLoading = true; // Show loading indicator
               });
@@ -129,7 +140,8 @@ class _PhoneNumberFormState extends State<PhoneNumberForm> {
                   );
                 }
               });
-            },
+            }
+                : null, // Disable the button if phone is invalid
             child: Text(
               widget.localization.get('submit'),
               style: const TextStyle(fontSize: 16, color: Colors.white),
