@@ -68,6 +68,9 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
                 ),
               );
             } else {
+              List<Map<String, dynamic>> missingPosterMovies = movies
+                  .where((movie) => (movie['stream_icon'] ?? '').isEmpty)
+                  .toList();
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -80,9 +83,6 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
                         itemCount: movies.length,
                         itemBuilder: (context, index) {
                           var movie = movies[index];
-
-                          // Debug: Print the movie's stream_icon
-                          print('Movie ${index + 1}: ${movie['stream_icon']}');
 
                           // Fallback image if the stream_icon is null or empty
                           String posterUrl = movie['stream_icon'] ?? '';
@@ -111,6 +111,38 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
                         },
                       ),
                     ),
+                    SizedBox(height: 16),
+                    // ListView of missing posters (movie details)
+                    if (missingPosterMovies.isNotEmpty)
+                      Container(
+                        height: 200, // Limit the height of the list
+                        child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          itemCount: missingPosterMovies.length,
+                          itemBuilder: (context, index) {
+                            var movie = missingPosterMovies[index];
+                            String movieName = movie['name'] ?? 'Unknown';
+                            String tmdbId = movie['tmdb_id'] ?? 'Unknown ID';
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Card(
+                                color: Colors.grey[850],
+                                child: ListTile(
+                                  title: Text(
+                                    movieName,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  subtitle: Text(
+                                    'TMDb ID: $tmdbId',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                   ],
                 ),
               );
