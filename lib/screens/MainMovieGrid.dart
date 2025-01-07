@@ -25,7 +25,7 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
 
     // Query to get 10 random movies from the database
     final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT * FROM movies ORDER BY RANDOM() LIMIT 10',
+      'SELECT * FROM movies WHERE tmdb IS NOT NULL AND tmdb != "" AND stream_icon IS NOT NULL AND stream_icon != "" ORDER BY RANDOM() LIMIT 10',
     );
 
     // Debug: Print the result to ensure it contains valid data
