@@ -28,6 +28,9 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
       'SELECT * FROM movies ORDER BY RANDOM() LIMIT 10',
     );
 
+    // Debug: Print the result to ensure it contains valid data
+    print('Fetched movies: $result');
+
     return result;
   }
 
@@ -77,6 +80,16 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
                         itemCount: movies.length,
                         itemBuilder: (context, index) {
                           var movie = movies[index];
+
+                          // Debug: Print the movie's stream_icon
+                          print('Movie ${index + 1}: ${movie['stream_icon']}');
+
+                          // Fallback image if the stream_icon is null or empty
+                          String posterUrl = movie['stream_icon'] ?? '';
+                          if (posterUrl.isEmpty) {
+                            posterUrl = 'https://placehold.co/400x600/png'; // Fallback image
+                          }
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: GestureDetector(
@@ -88,7 +101,7 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
                                   image: DecorationImage(
-                                    image: NetworkImage(movie['stream_icon']), // Displaying the stream icon
+                                    image: NetworkImage(posterUrl), // Displaying the stream icon
                                     fit: BoxFit.cover, // Make sure the image covers the container
                                   ),
                                 ),
