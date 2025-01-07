@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toudoum/screens/MainMovieGrid.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,10 +12,7 @@ class _HomePageState extends State<HomePage> {
   // Define the pages for each tab
   final List<Widget> _pages = [
     Center(
-      child: Text(
-        'Home Page',
-        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-      ),
+      child: Mainmoviegrid()
     ),
     Center(
       child: Text(
