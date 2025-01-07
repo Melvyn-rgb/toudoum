@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import 'package:toudoum/screens/loading_page.dart';
 import '../utils/colors.dart';
 import '../utils/localization.dart';
-import '../screens/home.dart';
 
 class PhoneNumberForm extends StatefulWidget {
   final String action;
@@ -124,7 +124,7 @@ class _PhoneNumberFormState extends State<PhoneNumberForm> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomePage(), // Navigate to HomePage
+                      builder: (context) => LoadingPage(), // Navigate to Loading Screen
                     ),
                   );
                 } else {
