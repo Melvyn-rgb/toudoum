@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../db/DatabaseHelper.dart';
+import '../player/ExoPlayer.dart';  // Import the ExoPlayer screen
 
 class Mainmoviegrid extends StatefulWidget {
   const Mainmoviegrid({Key? key}) : super(key: key);
@@ -7,7 +8,6 @@ class Mainmoviegrid extends StatefulWidget {
   @override
   _MainmoviegridState createState() => _MainmoviegridState();
 }
-
 class _MainmoviegridState extends State<Mainmoviegrid> {
   late Future<List<Map<String, dynamic>>> _randomMovies;
 
@@ -89,11 +89,23 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
                             posterUrl = 'https://placehold.co/400x600/png'; // Fallback image
                           }
 
+// Dynamically generate stream URL
+                          String streamId = movie['stream_id']?.toString() ?? ''; // Ensure stream_id is a string
+                          String streamUrl = 'http://portott.com:80/movie/dc12a1f9bf/251dc788f523/$streamId.mkv';
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: GestureDetector(
                               onTap: () {
-                                // Handle movie tap (e.g., show details or play the movie)
+                                // Navigate to ExoPlayer and pass the stream URL
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => HLSPlayerScreen(
+                                      streamUrl: streamUrl,
+                                    ),
+                                  ),
+                                );
                               },
                               child: Container(
                                 width: 150, // Width of each movie poster
