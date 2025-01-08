@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import '../db/DatabaseHelper.dart';
-import '../player/ExoPlayer.dart';  // Import the ExoPlayer screen
+import '../player/ExoPlayer.dart';
+import '../components/CarouselWidget.dart';
 
-class Mainmoviegrid extends StatefulWidget {
-  const Mainmoviegrid({Key? key}) : super(key: key);
+// Main Movie Grid Screen
+class MainMovieGrid extends StatefulWidget {
+  const MainMovieGrid({Key? key}) : super(key: key);
 
   @override
-  _MainmoviegridState createState() => _MainmoviegridState();
+  _MainMovieGridState createState() => _MainMovieGridState();
 }
-class _MainmoviegridState extends State<Mainmoviegrid> {
+
+class _MainMovieGridState extends State<MainMovieGrid> {
   late Future<List<Map<String, dynamic>>> _randomMovies;
 
   @override
@@ -17,19 +20,15 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
     _randomMovies = _fetchRandomMovies();
   }
 
-  // Fetch 10 random movies
   Future<List<Map<String, dynamic>>> _fetchRandomMovies() async {
     DatabaseHelper dbHelper = DatabaseHelper();
     final db = await dbHelper.database;
 
-    // Query to get 10 random movies from the database
     final List<Map<String, dynamic>> result = await db.rawQuery(
       'SELECT * FROM movies WHERE tmdb IS NOT NULL AND tmdb != "" AND stream_icon IS NOT NULL AND stream_icon != "" ORDER BY RANDOM() LIMIT 10',
     );
 
-    // Debug: Print the result to ensure it contains valid data
     print('Fetched movies: $result');
-
     return result;
   }
 
@@ -70,84 +69,44 @@ class _MainmoviegridState extends State<Mainmoviegrid> {
               List<Map<String, dynamic>> missingPosterMovies = movies
                   .where((movie) => (movie['stream_icon'] ?? '').isEmpty)
                   .toList();
+
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   children: [
-                    // Horizontal carousel (one-line view)
-                    Container(
-                      height: 250, // Limit the height of the carousel
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: movies.length,
-                        itemBuilder: (context, index) {
-                          var movie = movies[index];
+                    CarouselWidget(
+                      items: movies,
+                      onTap: (movie) {
+                        String streamId = movie['stream_id']?.toString() ?? '';
+                        String streamUrl = 'http://portott.com:80/movie/dc12a1f9bf/251dc788f523/$streamId.mkv';
 
-                          // Fallback image if the stream_icon is null or empty
-                          String posterUrl = movie['stream_icon'] ?? '';
-                          if (posterUrl.isEmpty) {
-                            posterUrl = 'https://placehold.co/400x600/png'; // Fallback image
-                          }
-
-// Dynamically generate stream URL
-                          String streamId = movie['stream_id']?.toString() ?? ''; // Ensure stream_id is a string
-                          String streamUrl = 'http://portott.com:80/movie/dc12a1f9bf/251dc788f523/$streamId.mkv';
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: GestureDetector(
-                              onTap: () {
-                                // Navigate to ExoPlayer and pass the stream URL
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => HLSPlayerScreen(
-                                      streamUrl: streamUrl,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                width: 150, // Width of each movie poster
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: NetworkImage(posterUrl), // Displaying the stream icon
-                                    fit: BoxFit.cover, // Make sure the image covers the container
-                                  ),
-                                ),
-                              ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HLSPlayerScreen(
+                              streamUrl: streamUrl,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                     SizedBox(height: 16),
-                    // ListView of missing posters (movie details)
                     if (missingPosterMovies.isNotEmpty)
-                      Container(
-                        height: 200, // Limit the height of the list
+                      Expanded(
                         child: ListView.builder(
-                          scrollDirection: Axis.vertical,
                           itemCount: missingPosterMovies.length,
                           itemBuilder: (context, index) {
                             var movie = missingPosterMovies[index];
-                            String movieName = movie['name'] ?? 'Unknown';
-                            String tmdbId = movie['tmdb_id'] ?? 'Unknown ID';
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4.0),
-                              child: Card(
-                                color: Colors.grey[850],
-                                child: ListTile(
-                                  title: Text(
-                                    movieName,
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  subtitle: Text(
-                                    'TMDb ID: $tmdbId',
-                                    style: TextStyle(color: Colors.white70),
-                                  ),
+                            return Card(
+                              color: Colors.grey[850],
+                              child: ListTile(
+                                title: Text(
+                                  movie['name'] ?? 'Unknown',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  'TMDb ID: ${movie['tmdb_id'] ?? 'Unknown ID'}',
+                                  style: TextStyle(color: Colors.white70),
                                 ),
                               ),
                             );

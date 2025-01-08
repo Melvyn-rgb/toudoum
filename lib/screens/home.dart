@@ -12,7 +12,7 @@ class _HomePageState extends State<HomePage> {
   // Define the pages for each tab
   final List<Widget> _pages = [
     Center(
-      child: Mainmoviegrid()
+      child: MainMovieGrid()
     ),
     Center(
       child: Text(
