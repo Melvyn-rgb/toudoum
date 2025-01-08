@@ -14,6 +14,7 @@ Future<List<Map<String, dynamic>>> fetchMoviesFromAPI() async {
         'stream_icon': movie['stream_icon'],
         'tmdb': movie['tmdb'],
         'stream_type': movie['stream_type'],
+        'container_extension': movie['container_extension'],
       };
     }).toList();
   } else {

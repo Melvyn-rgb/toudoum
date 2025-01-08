@@ -21,19 +21,28 @@ class DatabaseHelper {
       join(path, 'movies.db'),
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE movies(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            stream_id INTEGER,
-            name TEXT,
-            stream_icon TEXT,
-            tmdb TEXT,
-            stream_type TEXT
-          )
-        ''');
+        CREATE TABLE movies(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          stream_id INTEGER,
+          name TEXT,
+          stream_icon TEXT,
+          tmdb TEXT,
+          stream_type TEXT,
+          container_extension TEXT
+        )
+      ''');
       },
       version: 1,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < newVersion) {
+          await db.execute(
+            'ALTER TABLE movies ADD COLUMN container_extension TEXT',
+          );
+        }
+      },
     );
   }
+
 
   Future<int> insertMovie(Map<String, dynamic> movie) async {
     final db = await database;
