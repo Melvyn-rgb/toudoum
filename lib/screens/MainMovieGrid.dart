@@ -78,7 +78,10 @@ class _MainMovieGridState extends State<MainMovieGrid> {
                       items: movies,
                       onTap: (movie) {
                         String streamId = movie['stream_id']?.toString() ?? '';
-                        String streamUrl = 'http://portott.com:80/movie/dc12a1f9bf/251dc788f523/$streamId.mkv';
+                        String containerExtension = movie['container_extension']?.toString() ?? '';
+                        print(containerExtension);
+
+                        String streamUrl = 'http://portott.com:80/movie/dc12a1f9bf/251dc788f523/$streamId.$containerExtension';
 
                         Navigator.push(
                           context,
