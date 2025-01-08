@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as Path;
+import 'package:sqflite/sqflite.dart';
 import 'package:toudoum/screens/home.dart';
+import 'package:toudoum/screens/loading_page.dart';
 import 'main_page.dart';
 import '../utils/localization.dart';
 
@@ -13,24 +17,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  // lib/utils/dev_mode.dart
-  int DEV_MODE = 0; // Set to 1 for development mode (bypasses login)
+  // Development mode flag
+  int DEV_MODE = 1; // Set to 1 for development mode (bypasses login)
+  int SHOULD_RELOAD_DB = 0; // Set to 1 to delete and reload the database
 
   @override
   void initState() {
     super.initState();
-    // If DEV_MODE is 1, navigate directly to HomePage
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    if (SHOULD_RELOAD_DB == 1) {
+      await _deleteDatabaseFile();
+    }
+
     if (DEV_MODE == 1) {
       Future.delayed(const Duration(seconds: 1), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => LoadingPage(),
           ),
         );
       });
     } else {
-      // If not in DEV_MODE, wait 3 seconds and go to the login screen
       Future.delayed(const Duration(seconds: 3), () {
         Navigator.pushReplacement(
           context,
@@ -39,6 +50,22 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         );
       });
+    }
+  }
+
+  Future<void> _deleteDatabaseFile() async {
+    try {
+      String dbPath = Path.join(await getDatabasesPath(), 'movies.db');
+      File dbFile = File(dbPath);
+
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+        print('Database file deleted successfully.');
+      } else {
+        print('No database file found to delete.');
+      }
+    } catch (e) {
+      print('Error deleting database file: $e');
     }
   }
 
