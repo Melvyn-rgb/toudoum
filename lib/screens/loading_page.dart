@@ -69,10 +69,19 @@ class _LoadingPageState extends State<LoadingPage> {
       });
 
       List<Map<String, dynamic>> movies = await fetchMoviesFromAPI();
+      int totalMovies = movies.length; // Total number of movies
+      int insertedCount = 0; // Counter for inserted movies
 
       // Insert movies into the database
       for (var movie in movies) {
         await dbHelper.insertMovie(movie);
+        insertedCount++; // Increment counter
+
+        // Update progress message
+        setState(() {
+          _progressMessage =
+          "Inserting movies into database... ($insertedCount / $totalMovies)";
+        });
       }
 
       setState(() {
@@ -85,6 +94,7 @@ class _LoadingPageState extends State<LoadingPage> {
       print('Error fetching or inserting movies: $e');
     }
   }
+
 
   void _navigateToHome() {
     Navigator.pushReplacement(
