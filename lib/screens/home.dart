@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toudoum/screens/MainMovieGrid.dart';
+import 'ExplorePage.dart';
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,10 +17,7 @@ class _HomePageState extends State<HomePage> {
       child: MainMovieGrid()
     ),
     Center(
-      child: Text(
-        'Explore Page',
-        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-      ),
+      child: ExplorePage()
     ),
     Center(
       child: Text(
