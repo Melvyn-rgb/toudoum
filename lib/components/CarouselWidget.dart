@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Reusable Carousel Widget
 class CarouselWidget extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final double height;
@@ -15,6 +14,9 @@ class CarouselWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the screen width
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       height: height,
       child: ListView.builder(
@@ -22,17 +24,20 @@ class CarouselWidget extends StatelessWidget {
         itemCount: items.length,
         itemBuilder: (context, index) {
           var item = items[index];
-          String posterUrl = item['stream_icon'] ?? '';
+          String posterUrl = 'https://image.tmdb.org/t/p/w1280' + item['poster_path'] ?? '';
           if (posterUrl.isEmpty) {
             posterUrl = 'https://placehold.co/400x600/png'; // Fallback image
           }
 
+          // Calculate the width of each poster (3.5 posters per screen)
+          double itemWidth = screenWidth / 3.5;
+
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0), // Adjusted padding for more space
             child: GestureDetector(
               onTap: () => onTap(item),
               child: Container(
-                width: 150, // Width of each item
+                width: itemWidth, // Set width to fit 3.5 posters
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   image: DecorationImage(
