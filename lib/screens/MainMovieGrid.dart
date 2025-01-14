@@ -12,8 +12,8 @@ class MainMovieGrid extends StatefulWidget {
 }
 
 class _MainMovieGridState extends State<MainMovieGrid> {
-  final String apiUrl = "http://10.0.2.2:8980/api.php/home"; // Replace with your actual API URL
-  final String featuredUrl = "http://10.0.2.2:8980/api.php/featured"; // API endpoint for featured movie
+  final String apiUrl = "http://192.168.1.27:8980/api.php/home"; // Replace with your actual API URL
+  final String featuredUrl = "http://192.168.1.27:8980/api.php/featured"; // API endpoint for featured movie
 
   Map<String, dynamic> movieCategories = {};
   Map<String, dynamic>? featuredMovie;
@@ -136,7 +136,7 @@ class _MainMovieGridState extends State<MainMovieGrid> {
                     child: Image.network(
                       "https://image.tmdb.org/t/p/w500" + featuredMovie!['poster_path'], // Use poster_path with base URL
                       fit: BoxFit.fitHeight,
-                      height: 500, // Increased height for more prominence
+                      height: 375, // Increased height for more prominence
                     ),
                   ),
                   // Row with play and add to favorites buttons
@@ -145,45 +145,52 @@ class _MainMovieGridState extends State<MainMovieGrid> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black, // White background
-                            backgroundColor: Colors.white, // Black text
-                            minimumSize: Size(160, 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0), // Slight border radius
+                        // Play button
+                        Flexible(
+                          child: ElevatedButton.icon(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.black, // White background
+                              backgroundColor: Colors.white, // Black text
+                              minimumSize: Size(160, 40),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0), // Slight border radius
+                              ),
                             ),
-                          ),
-                          icon: Icon(Icons.play_arrow, color: Colors.black), // Play icon
-                          label: Text(
-                            "Play",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold, // Bold text
+                            icon: Icon(Icons.play_arrow, color: Colors.black), // Play icon
+                            label: Text(
+                              "Play",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, // Bold text
+                              ),
                             ),
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[800], // Dark gray background
-                            foregroundColor: Colors.white, // White text
-                            minimumSize: Size(160, 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0), // Slight border radius
+                        SizedBox(width: 8), // Add a small space between the buttons
+                        // Add to favorites button
+                        Flexible(
+                          child: ElevatedButton.icon(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[800], // Dark gray background
+                              foregroundColor: Colors.white, // White text
+                              minimumSize: Size(160, 40),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0), // Slight border radius
+                              ),
                             ),
-                          ),
-                          icon: Icon(Icons.favorite_border, color: Colors.white), // Favorite icon
-                          label: Text(
-                            "Add to Favorites",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold, // Bold text
+                            icon: Icon(Icons.favorite_border, color: Colors.white), // Favorite icon
+                            label: Text(
+                              "Favori",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, // Bold text
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
             )

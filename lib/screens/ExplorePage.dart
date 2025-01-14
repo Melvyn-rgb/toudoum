@@ -25,7 +25,7 @@ class _ExplorePage extends State<ExplorePage> {
     });
 
     try {
-      final url = Uri.parse('http://10.0.2.2:8980/api.php/search?query=$query');
+      final url = Uri.parse('http://192.168.1.27:8980/api.php/search?query=$query');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -52,6 +52,10 @@ class _ExplorePage extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Explore Movies', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+      ),
       backgroundColor: Colors.black,
       body: Column(
         children: [
@@ -94,7 +98,7 @@ class _ExplorePage extends State<ExplorePage> {
             )
                 : GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+                crossAxisCount: 3, // 3 columns
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
                 childAspectRatio: 2 / 3, // Vertical poster-like aspect ratio
