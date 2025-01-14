@@ -20,8 +20,8 @@ class CarouselWidget extends StatelessWidget {
     // Get the screen width
     double screenWidth = MediaQuery.of(context).size.width;
 
-    // Calculate the width of each item (3.8 posters per screen)
-    double itemWidth = screenWidth / 3.8;
+    // Calculate the width of each item (3 posters per screen)
+    double itemWidth = screenWidth / 3;
 
     return Container(
       height: height,
@@ -39,13 +39,13 @@ class CarouselWidget extends StatelessWidget {
           if (posterUrl.isEmpty) {
             posterUrl = 'https://placehold.co/400x600/png'; // Fallback image
           } else {
-            posterUrl = 'https://image.tmdb.org/t/p/w1280$posterUrl';
+            posterUrl = 'https://image.tmdb.org/t/p/w342$posterUrl';
           }
 
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: GestureDetector(
-              onTap: () => onTap(item),
+              onTap: () => _showBottomSheet(context, item),
               child: Container(
                 width: itemWidth,
                 decoration: BoxDecoration(
@@ -57,7 +57,7 @@ class CarouselWidget extends StatelessWidget {
                 ),
                 child: AspectRatio(
                   aspectRatio: 3.8 / 1, // Maintain the 3.8:1 width-to-height ratio
-                  child: Container(), // This is where the image will be placed
+                  child: Container(), // The container for the image will maintain the aspect ratio
                 ),
               ),
             ),
@@ -67,9 +67,35 @@ class CarouselWidget extends StatelessWidget {
     );
   }
 
+  // Function to show the bottom sheet with the original_name of the item
+  void _showBottomSheet(BuildContext context, Map<String, dynamic> item) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          height: 250, // Height of the bottom sheet
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Original Name: ${item['original_name'] ?? 'N/A'}',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Add other information about the item if you need
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   // Function to build skeleton loading for movie posters
   Widget _buildSkeletonLoading(double screenWidth) {
-    double itemWidth = screenWidth / 3.8;
+    double itemWidth = screenWidth / 3;
 
     return ListView.builder(
       scrollDirection: Axis.horizontal,
