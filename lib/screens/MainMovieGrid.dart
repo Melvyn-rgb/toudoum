@@ -19,11 +19,24 @@ class _MainMovieGridState extends State<MainMovieGrid> {
   Map<String, dynamic>? featuredMovie;
   bool isLoading = true;
 
+  String? selectedCountry = 'US'; // Default selected country code
+  final List<String> countries = ['US', 'FR', 'DE', 'IN']; // Example country codes
+
+  ScrollController _scrollController = ScrollController(); // Controller to track scroll position
+  bool _isScrolled = false; // Flag to detect scroll
+
   @override
   void initState() {
     super.initState();
     fetchApiResponse();
     fetchFeaturedMovie();
+
+    // Listener to track scroll and change the app bar color
+    _scrollController.addListener(() {
+      setState(() {
+        _isScrolled = _scrollController.offset > 100; // Change 100 to control when it switches to gray
+      });
+    });
   }
 
   // Fetch the featured movie data
@@ -66,54 +79,117 @@ class _MainMovieGridState extends State<MainMovieGrid> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: _isScrolled ? Color(0x363636).withOpacity(0.9) : Colors.black, // Change to gray when scrolled
         title: const Text(
           'Pour Melvyn',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.black, // App bar with black background
+        actions: [
+          // Country flag select box in the AppBar
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: DropdownButton<String>(
+              value: selectedCountry,
+              icon: Icon(Icons.arrow_downward, color: Colors.white),
+              elevation: 16,
+              style: TextStyle(color: Colors.black),
+              underline: Container(
+                height: 2,
+                color: Colors.black,
+              ),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedCountry = newValue;
+                });
+              },
+              items: countries.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value), // You can replace this with country flag icons
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
+        controller: _scrollController,
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Display the featured movie with border radius and padding
+            SizedBox(height: 80),
+            // Centered container with border for featured movie and buttons
             featuredMovie != null
                 ? Container(
               width: double.infinity,
-              height: 600, // Increased height for more prominence
               decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                    "https://image.tmdb.org/t/p/w500" + featuredMovie!['poster_path'], // Use poster_path with base URL
-                  ),
-                  fit: BoxFit.fill,
-                ),
-                borderRadius: BorderRadius.circular(16.0), // Border radius added here
+                borderRadius: BorderRadius.circular(16.0),// White border
               ),
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    featuredMovie!['original_name'],
-                    style: TextStyle(
-                      fontSize: 28, // Larger font size for better visibility
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(color: Colors.black.withOpacity(0.5), offset: Offset(2, 2))
+              child: Column(
+                children: [
+                  // Featured movie with border radius
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16.0), // Border radius for the image
+                    child: Image.network(
+                      "https://image.tmdb.org/t/p/w500" + featuredMovie!['poster_path'], // Use poster_path with base URL
+                      fit: BoxFit.fitHeight,
+                      height: 500, // Increased height for more prominence
+                    ),
+                  ),
+                  // Row with play and add to favorites buttons
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black, // White background
+                            backgroundColor: Colors.white, // Black text
+                            minimumSize: Size(160, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0), // Slight border radius
+                            ),
+                          ),
+                          icon: Icon(Icons.play_arrow, color: Colors.black), // Play icon
+                          label: Text(
+                            "Play",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, // Bold text
+                            ),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[800], // Dark gray background
+                            foregroundColor: Colors.white, // White text
+                            minimumSize: Size(160, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0), // Slight border radius
+                            ),
+                          ),
+                          icon: Icon(Icons.favorite_border, color: Colors.white), // Favorite icon
+                          label: Text(
+                            "Add to Favorites",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, // Bold text
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
+                ],
               ),
             )
                 : SizedBox.shrink(),
 
-            SizedBox(height: 24.0), // Increased padding between the featured poster and the carousels
+            SizedBox(height: 24.0), // Additional space between buttons and carousels
 
             // Categories and Carousels
             ...movieCategories.entries.map((category) {
@@ -126,7 +202,7 @@ class _MainMovieGridState extends State<MainMovieGrid> {
           ],
         ),
       ),
-      backgroundColor: Colors.black, // Black background for contrast
+      backgroundColor: Colors.black, // Black background for the body
     );
   }
 }
