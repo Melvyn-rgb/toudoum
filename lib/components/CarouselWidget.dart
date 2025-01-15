@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'MovieDetailsBottomSheet.dart';
 
 class CarouselWidget extends StatelessWidget {
   final List<Map<String, dynamic>> items;
@@ -66,32 +67,15 @@ class CarouselWidget extends StatelessWidget {
       ),
     );
   }
-
-  // Function to show the bottom sheet with the original_name of the item
   void _showBottomSheet(BuildContext context, Map<String, dynamic> item) {
     showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return Container(
-          padding: EdgeInsets.all(16.0),
-          height: 250, // Height of the bottom sheet
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Original Name: ${item['original_name'] ?? 'N/A'}',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              // Add other information about the item if you need
-            ],
-          ),
-        );
-      },
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => MovieDetailsBottomSheet(item: item),
     );
   }
+
 
   // Function to build skeleton loading for movie posters
   Widget _buildSkeletonLoading(double screenWidth) {
