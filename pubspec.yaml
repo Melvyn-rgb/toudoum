@@ -48,6 +48,8 @@ dependencies:
   video_player: ^2.9.2
   shimmer: ^3.0.0
   flutter_sticky_header: ^0.7.0
+  youtube_player_flutter: ^9.1.1
+  pod_player: ^0.2.2
 
 dev_dependencies:
   flutter_test:
