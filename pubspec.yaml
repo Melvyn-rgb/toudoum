@@ -50,6 +50,7 @@ dependencies:
   flutter_sticky_header: ^0.7.0
   youtube_player_flutter: ^9.1.1
   pod_player: ^0.2.2
+  flutter_vlc_player: ^7.4.2
 
 dev_dependencies:
   flutter_test:
