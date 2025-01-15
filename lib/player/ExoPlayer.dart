@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:flutter/services.dart'; // For screen orientation control
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
 class HLSPlayerScreen extends StatefulWidget {
-  final String streamUrl; // Stream URL passed as parameter
+  final String streamUrl;
 
   const HLSPlayerScreen({Key? key, required this.streamUrl}) : super(key: key);
 
@@ -11,82 +12,113 @@ class HLSPlayerScreen extends StatefulWidget {
 }
 
 class _HLSPlayerScreenState extends State<HLSPlayerScreen> {
-  late VideoPlayerController _controller;
+  late VlcPlayerController _vlcPlayerController;
   bool _isPlayerInitialized = false;
-  bool _isError = false;
-  String _errorMessage = '';
+  double _progress = 0.0;
+  double _duration = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _initializePlayer();
-  }
 
-  // Initialize the video player with the stream URL
-  Future<void> _initializePlayer() async {
-    try {
-      // Use HLS stream URL passed from the widget
-      _controller = VideoPlayerController.network(widget.streamUrl)
-        ..initialize().then((_) {
-          setState(() {
-            _isPlayerInitialized = true;
-          });
-          _controller.play();
-          _controller.setLooping(true);  // Optional: loop video
-        });
-    } catch (e) {
+    // Lock orientation to landscape and hide system UI
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+      SystemUiOverlay.top
+    ]);
+    // Initialize VLC Player
+    _vlcPlayerController = VlcPlayerController.network(
+      widget.streamUrl,
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+
+    // Listen to player progress
+    _vlcPlayerController.addListener(() {
       setState(() {
-        _isError = true;
-        _errorMessage = "Error initializing player: $e";
+        _progress = _vlcPlayerController.value.position.inSeconds.toDouble();
+        _duration = _vlcPlayerController.value.duration.inSeconds.toDouble();
       });
-      print(_errorMessage); // Log error
-    }
+    });
+
+    print("Stream URL: ${widget.streamUrl}");
   }
 
   @override
   void dispose() {
+    // Reset orientation to portrait and show system UI on screen exit
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+      SystemUiOverlay.top
+    ]);
+    _vlcPlayerController.dispose();
     super.dispose();
-    _controller.dispose();
+  }
+
+  // Method to seek the video
+  void _seekTo(double value) {
+    final position = Duration(seconds: value.toInt());
+    _vlcPlayerController.seekTo(position);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('HLS Stream'),
-        backgroundColor: Colors.red,
-      ),
-      body: _isError
-          ? Center(
-        child: Text(
-          _errorMessage,
-          style: TextStyle(color: Colors.red, fontSize: 18),
-        ),
-      )
-          : Center(
-        child: _isPlayerInitialized
-            ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
+      body: Stack(
+        children: [
+          // Full-screen video player
+          Positioned.fill(
+            child: VlcPlayer(
+              controller: _vlcPlayerController,
+              aspectRatio: 16 / 9, // Set aspect ratio for video
+              virtualDisplay: true, // Virtual display (for fullscreen)
             ),
-            VideoProgressIndicator(
-              _controller,
-              allowScrubbing: true,
-              colors: VideoProgressColors(
-                playedColor: Colors.red,
-                bufferedColor: Colors.grey,
-                backgroundColor: Colors.black,
+          ),
+          // Timeline (progress bar) stacked over the player
+          Positioned(
+            bottom: 50, // Place the timeline over the video
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  Slider(
+                    value: _progress,
+                    min: 0,
+                    max: _duration > 0 ? _duration : 1,
+                    onChanged: _seekTo,
+                    activeColor: Colors.red,
+                    inactiveColor: Colors.white54,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _formatDuration(Duration(seconds: _progress.toInt())),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        _formatDuration(Duration(seconds: _duration.toInt())),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        )
-            : CircularProgressIndicator(),
+          ),
+        ],
       ),
     );
   }
-}
 
+  // Helper method to format duration
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "${twoDigitMinutes}:${twoDigitSeconds}";
+  }
+}
