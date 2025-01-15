@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../components/MovieDetailsBottomSheet.dart';
 
 class ExplorePage extends StatefulWidget {
   @override
@@ -106,20 +107,30 @@ class _ExplorePage extends State<ExplorePage> {
               itemCount: movies.length,
               itemBuilder: (context, index) {
                 final movie = movies[index];
-                return Card(
-                  color: Colors.black,
-                  elevation: 3.0,
-                  child: movie['poster_path'] != null
-                      ? Image.network(
-                    "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + movie['poster_path'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                  )
-                      : const Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: Colors.white,
+                return GestureDetector(
+                  onTap: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => MovieDetailsBottomSheet(
+                      item: movie,
+                    ),
+                  ),
+                  child: Card(
+                    color: Colors.black,
+                    elevation: 3.0,
+                    child: movie['poster_path'] != null
+                        ? Image.network(
+                      "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + movie['poster_path'],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    )
+                        : const Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 );
