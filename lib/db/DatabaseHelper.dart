@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
@@ -43,7 +42,6 @@ class DatabaseHelper {
     );
   }
 
-
   Future<int> insertMovie(Map<String, dynamic> movie) async {
     final db = await database;
     return db.insert('movies', movie);
@@ -53,4 +51,20 @@ class DatabaseHelper {
     final db = await database;
     return db.query('movies');
   }
+
+  // Search for a movie by tmdb or movie_id
+  Future<List<Map<String, dynamic>>> searchMovie({int? movieId, String? tmdbId}) async {
+    final db = await database;
+
+    if (movieId != null) {
+      // Search by movie ID
+      return db.query('movies', where: 'id = ?', whereArgs: [movieId]);
+    } else if (tmdbId != null) {
+      // Search by tmdb ID
+      return db.query('movies', where: 'tmdb = ?', whereArgs: [tmdbId]);
+    } else {
+      return [];
+    }
+  }
 }
+
