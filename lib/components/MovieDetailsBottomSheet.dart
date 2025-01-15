@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
+import '../db/DatabaseHelper.dart';
+import '../player/ExoPlayer.dart';
+
 class MovieDetailsBottomSheet extends StatelessWidget {
   final Map<String, dynamic> item;
 
@@ -27,7 +30,72 @@ class MovieDetailsBottomSheet extends StatelessWidget {
         }
 
         Map<String, dynamic> movieDetails = json.decode(snapshot.data!.body);
-        return _buildContent(context, movieDetails);
+
+        // Fetch the stream_id from the database based on tmdbId
+        return FutureBuilder<List<Map<String, dynamic>>>(
+          future: DatabaseHelper().searchMovie(tmdbId: movieId), // Use searchMovie by tmdbId
+          builder: (context, dbSnapshot) {
+            if (dbSnapshot.connectionState == ConnectionState.waiting) {
+              return _buildLoading(context);
+            }
+
+            if (dbSnapshot.hasError || !dbSnapshot.hasData || dbSnapshot.data!.isEmpty) {
+              return _buildError(context);
+            }
+
+            // Get the stream_id from the database
+            int numberOfResults = dbSnapshot.data!.length;
+
+            String streamId = "";
+            String containerExtension = "";
+
+            if (numberOfResults == 1) {
+              // If there's exactly 1 result, get the stream_id
+              streamId = dbSnapshot.data!.first['stream_id']?.toString() ?? 'N/A';
+              containerExtension = dbSnapshot.data!.first['container_extension']?.toString() ?? 'N/A';
+              // Do something with the streamId
+            } else {
+              List<String> names = [];
+              List<String> languageCodes = [];
+
+              for (var item in dbSnapshot.data!) {
+                String name = item['name']?.toString() ?? 'N/A';
+                names.add(name);
+
+                // Extract language code from the 'name' by splitting at ' - '
+                String languageCode = name.split(' - ').first;
+                languageCodes.add(languageCode);
+              }
+
+              // Print all language codes
+              print("Language Codes in the results: ${languageCodes.join(', ')}");
+
+              // Prioritize languages: 'FR', 'EN', 'NF', or use the first available language
+              String selectedLanguage = '';
+              for (var priority in ['FR', 'EN', 'NF']) {
+                if (languageCodes.contains(priority)) {
+                  selectedLanguage = priority;
+                  break;
+                }
+              }
+
+              // If no priority language is found, use the first language code available
+              if (selectedLanguage.isEmpty) {
+                selectedLanguage = languageCodes.first;
+              }
+
+              print("Selected Language: $selectedLanguage");
+
+              // Get the first streamId and containerExtension
+              streamId = dbSnapshot.data!.first['stream_id']?.toString() ?? 'N/A';
+              containerExtension = dbSnapshot.data!.first['container_extension']?.toString() ?? 'N/A';
+            }
+
+
+            print(dbSnapshot.data!);
+            return _buildContent(context, movieDetails, streamId, containerExtension);
+          },
+        );
       },
     );
   }
@@ -55,36 +123,42 @@ class MovieDetailsBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, Map<String, dynamic> movieDetails) {
+  Widget _buildContent(BuildContext context, Map<String, dynamic> movieDetails, String streamId, String containerExtension) {
     String title = movieDetails['title'] ?? 'N/A';
     String overview = movieDetails['overview'] ?? 'N/A';
     String tagline = movieDetails['tagline'] ?? 'N/A';
     double voteAverage = movieDetails['vote_average']?.toDouble() ?? 0.0;
     List<dynamic> genres = movieDetails['genres'] ?? [];
+    String? trailerKey = movieDetails['trailer']?['key'];
+    String? backdropPath = movieDetails['backdrop_path'];
+    String? releaseDate = movieDetails['release_date'];
+    String  streamUrl   = "http://fzahtv.com:80/movie/dc12a1f9bf/251dc788f523/" + streamId + "." + containerExtension;
+    print(streamUrl);
 
-    YoutubePlayerController _controller = YoutubePlayerController(
-      initialVideoId: movieDetails['trailer']['key'],
-      flags: YoutubePlayerFlags(
-        hideControls: true,
-        autoPlay: true,
-        mute: false,
-        enableCaption: false,
-      ),
-    );
+    bool hasValidTrailer = trailerKey != null && trailerKey.isNotEmpty;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.9,
       decoration: BoxDecoration(
-        color: Colors.grey,
+        color: Colors.black,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Stack(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            child: YoutubePlayerBuilder(
+            child: hasValidTrailer
+                ? YoutubePlayerBuilder(
               player: YoutubePlayer(
-                controller: _controller,
+                controller: YoutubePlayerController(
+                  initialVideoId: trailerKey!,
+                  flags: YoutubePlayerFlags(
+                    hideControls: true,
+                    autoPlay: true,
+                    mute: false,
+                    enableCaption: false,
+                  ),
+                ),
                 showVideoProgressIndicator: true,
                 progressIndicatorColor: Colors.amber,
                 progressColors: const ProgressBarColors(
@@ -95,9 +169,7 @@ class MovieDetailsBottomSheet extends StatelessWidget {
                   const SizedBox(width: 14.0),
                   CurrentPosition(),
                   const SizedBox(width: 8.0),
-                  ProgressBar(
-                    isExpanded: true,
-                  ),
+                  ProgressBar(isExpanded: true),
                   RemainingDuration(),
                   const PlaybackSpeedButton(),
                 ],
@@ -109,6 +181,12 @@ class MovieDetailsBottomSheet extends StatelessWidget {
                   child: player,
                 );
               },
+            )
+                : Image.network(
+              'http://image.tmdb.org/t/p/original$backdropPath',
+              height: MediaQuery.of(context).size.height * 0.4,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
           ),
           Positioned(
@@ -124,26 +202,60 @@ class MovieDetailsBottomSheet extends StatelessWidget {
             left: 0,
             right: 0,
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(8.0),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 16),
                     Text(
-                      'Title: $title',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      '$title',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    Text(
+                      '$releaseDate',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HLSPlayerScreen(streamUrl: streamUrl),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.play_arrow, color: Colors.black),
+                      label: const Text(
+                        'Play',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$overview',
+                      style: const TextStyle(fontSize: 11, color: Colors.white),
+                      maxLines: 3, // Limit the text to 3 lines
+                      overflow: TextOverflow.ellipsis, // Add ellipsis when text overflows
                     ),
                     SizedBox(height: 8),
-                    Text('Overview: $overview', style: TextStyle(fontSize: 16, color: Colors.white)),
-                    SizedBox(height: 8),
-                    Text('Tagline: $tagline', style: TextStyle(fontSize: 16, color: Colors.white)),
-                    SizedBox(height: 8),
-                    Text('Vote Average: $voteAverage', style: TextStyle(fontSize: 16, color: Colors.white)),
-                    SizedBox(height: 8),
                     Text(
-                      'Genres: ${genres.isNotEmpty ? genres.map((genre) => genre['name']).join(', ') : 'N/A'}',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+                      'Genres: ${genres.isNotEmpty ? genres.map((genre) => genre['name']).join(' · ') : 'N/A'}',
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Production: ${movieDetails['production_companies'].isNotEmpty ? movieDetails['production_companies'].map((company) => company['name']).join(' · ') : 'N/A'}',
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
