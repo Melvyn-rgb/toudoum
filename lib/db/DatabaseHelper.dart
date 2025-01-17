@@ -66,5 +66,40 @@ class DatabaseHelper {
       return [];
     }
   }
-}
 
+
+
+  static Future<List<Map<String, dynamic>>> fetchLanguagesForMovie(String movieId) async {
+    final db = await DatabaseHelper().database;
+
+    // Fetch the movie details using the movie ID
+    List<Map<String, dynamic>> movieDetails = await DatabaseHelper().searchMovie(tmdbId: movieId);
+
+    List<Map<String, dynamic>> result = []; // To hold the movie and title association
+
+    // Check if movie details exist
+    if (movieDetails.isNotEmpty) {
+      print('Found movie with ID: $movieId');
+
+      // Loop through the movie details
+      for (var movie in movieDetails) {
+        String title = movie['name'] ?? 'No Name'; // Replace 'name' with the correct column name
+        String id = movie['id'].toString(); // Assuming 'id' is the column name for movie ID
+
+        // Print for debugging
+        print('Movie Title: $title');
+
+        // Create a map with movie id and title
+        result.add({
+          'movieId': id,
+          'movieTitle': title,
+        });
+      }
+    } else {
+      print('No movie found with ID: $movieId');
+    }
+
+    return result; // Return the list of movies with their titles
+  }
+
+}
