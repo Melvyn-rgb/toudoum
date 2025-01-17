@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as Path;
 import 'package:sqflite/sqflite.dart';
 import '../db/DatabaseHelper.dart';
-import '../db/ApiHandler.dart';
+import '../db/XtreamCodesAPI.dart';
 import '../screens/home.dart';
 
 class LoadingPage extends StatefulWidget {
