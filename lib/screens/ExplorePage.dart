@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:toudoum/utils/ApiConstants.dart';
 import '../components/MovieDetailsBottomSheet.dart';
 
 class ExplorePage extends StatefulWidget {
@@ -26,7 +27,7 @@ class _ExplorePage extends State<ExplorePage> {
     });
 
     try {
-      final url = Uri.parse('http://192.168.1.27:8980/api.php/search?query=$query');
+      final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.searchEndpoint + query);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

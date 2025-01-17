@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:toudoum/utils/ApiConstants.dart';
 import 'dart:convert';
 import '../components/CategoryWidget.dart';
 
@@ -12,8 +13,8 @@ class MainMovieGrid extends StatefulWidget {
 }
 
 class _MainMovieGridState extends State<MainMovieGrid> {
-  final String apiUrl = "http://192.168.1.27:8980/api.php/home"; // Replace with your actual API URL
-  final String featuredUrl = "http://192.168.1.27:8980/api.php/featured"; // API endpoint for featured movie
+  final String apiUrl = ApiConstants.baseUrl + ApiConstants.homeEndpoint; // Replace with your actual API URL
+  final String featuredUrl = ApiConstants.baseUrl + ApiConstants.featuredEndpoint; // API endpoint for featured movie
 
   Map<String, dynamic> movieCategories = {};
   Map<String, dynamic>? featuredMovie;

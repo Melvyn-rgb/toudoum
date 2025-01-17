@@ -5,6 +5,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../db/DatabaseHelper.dart';
 import '../player/ExoPlayer.dart';
+import '../utils/ApiConstants.dart';
 
 class MovieDetailsBottomSheet extends StatelessWidget {
   final Map<String, dynamic> item;
@@ -19,7 +20,7 @@ class MovieDetailsBottomSheet extends StatelessWidget {
     String movieId = item['movie_id']?.toString() ?? 'N/A';
 
     return FutureBuilder<http.Response>(
-      future: http.get(Uri.parse('http://192.168.39.52:8980/api.php/movie/$movieId')),
+      future: http.get(Uri.parse(ApiConstants.baseUrl + ApiConstants.movieDetailsEndpoint + movieId)),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoading(context);
