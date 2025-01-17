@@ -19,7 +19,7 @@ class MovieDetailsBottomSheet extends StatelessWidget {
     String movieId = item['movie_id']?.toString() ?? 'N/A';
 
     return FutureBuilder<http.Response>(
-      future: http.get(Uri.parse('http://192.168.1.27:8980/api.php/movie/$movieId')),
+      future: http.get(Uri.parse('http://192.168.39.52:8980/api.php/movie/$movieId')),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoading(context);
@@ -221,7 +221,7 @@ class MovieDetailsBottomSheet extends StatelessWidget {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HLSPlayerScreen(streamUrl: streamUrl),
+                            builder: (context) => HLSPlayerScreen(streamUrl: streamUrl, movieId: item['movie_id']!.toString()),
                           ),
                         );
                       },
