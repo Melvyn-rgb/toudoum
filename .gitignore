@@ -127,7 +127,7 @@ unlinked_spec.ds
 **/macos
 **/.metadata
 **/analysis_options.yaml
-**/android
+
 **/ios
 **/test
 **/assets/fonts
